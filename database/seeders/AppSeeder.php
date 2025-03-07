@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AttributeType;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 use App\Models\Project;
 use App\Models\Timesheet;
 use App\Models\User;
@@ -28,8 +31,23 @@ class AppSeeder extends Seeder
         // create projects
         $projects = Project::factory(10)->create();
 
+        // create attributes
+        $attributes = [
+            Attribute::factory()->create(['name' => 'budget', 'type' => AttributeType::Number->value]),
+            Attribute::factory()->create(['name' => 'department', 'type' => AttributeType::Text->value]),
+            Attribute::factory()->create(['name' => 'start_date', 'type' => AttributeType::Date->value]),
+            Attribute::factory()->create(['name' => 'end_date', 'type' => AttributeType::Date->value]),
+        ];
+
         foreach ($projects as $project) {
             $randomIds = $ids->random(3)->toArray();
+
+            // assign attributes to projects
+            foreach ($attributes as $attribute) {
+                AttributeValue::factory()->withAttribute($attribute)->create([
+                    'entity_id' => $project->id,
+                ]);
+            }
 
             // assign users to projects
             $project->users()->attach($randomIds);

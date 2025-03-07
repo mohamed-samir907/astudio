@@ -13,4 +13,6 @@ Route::middleware('auth:api')->group(function (): void {
 
     Route::apiResource('projects', App\Http\Controllers\ProjectController::class);
     Route::apiResource('timesheets', App\Http\Controllers\TimesheetController::class);
+    Route::apiResource('attributes', App\Http\Controllers\AttributeController::class);
+    Route::apiResource('attribute-values', App\Http\Controllers\AttributeValueController::class);
 });

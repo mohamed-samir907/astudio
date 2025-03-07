@@ -36,5 +36,15 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Timesheet\TimesheetRepository::class,
             \App\Repositories\Timesheet\EloquentTimesheetRepository::class,
         );
+
+        $this->app->bind(
+            \App\Repositories\Attribute\AttributeRepository::class,
+            \App\Repositories\Attribute\EloquentAttributeRepository::class,
+        );
+
+        $this->app->bind(
+            \App\Repositories\AttributeValue\AttributeValueRepository::class,
+            \App\Repositories\AttributeValue\EloquentAttributeValueRepository::class,
+        );
     }
 }
