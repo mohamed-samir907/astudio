@@ -5,7 +5,6 @@ namespace App\DTOs;
 use App\Enums\ProjectStatus;
 use Illuminate\Http\Request;
 use App\Contracts\DTOInterface;
-use App\DTOs\ProjectAttributeValue;
 
 readonly class ProjectDTO implements DTOInterface
 {
@@ -20,12 +19,16 @@ readonly class ProjectDTO implements DTOInterface
 
     public static function fromRequest(Request $request): self
     {
-        $attributes = collect($request->get('attributes', []))
+        /** @var array<int, array{attribute_id: int, value: string}> $attributes */
+        $attributes = $request->get('attributes', []);
+
+        /** @var array<int, ProjectAttributeValue> $attributes */
+        $attributes = collect($attributes)
             ->map(
                 fn($attribute) => new ProjectAttributeValue(
                     attributeId: $attribute['attribute_id'],
                     value: $attribute['value'],
-                )
+                ),
             )
             ->toArray();
 

@@ -55,6 +55,48 @@ describe('Index', function (): void {
             'user_id' => $this->user->id,
         ]);
     });
+
+    it('can filter the results', function (): void {
+        $projects = Project::factory(5)->create();
+        $this->user->projects()->attach($projects->pluck('id')->toArray());
+
+        AttributeValue::factory(10)->create([
+            'entity_id' => $projects->random()->id,
+        ]);
+
+        $filters = 'filters[status]=completed';
+        $filters .= '&filters[budget][op]=>&filters[budget][val]=100';
+        $filters .= '&filters[department]=IT';
+        $filters .= '&filters[name][op]=like&filters[name][val]=Project';
+
+        $response = getJson('/api/projects?' . $filters);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'status',
+                        'attributes' => [
+                            '*' => [
+                                'id',
+                                'attribute_id',
+                                'name',
+                                'type',
+                                'value',
+                            ],
+                        ],
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+                'links',
+                'meta',
+            ]);
+    });
 });
 
 describe('Show', function (): void {
@@ -165,7 +207,7 @@ describe('Create', function (): void {
         expect($project->users()->count())->toBe(4);
     });
 
-    it('can create a project with attribute values', function () {
+    it('can create a project with attribute values', function (): void {
         $attribute = Attribute::factory()->create();
         $attributeValue = [
             'attribute_id' => $attribute->id,
@@ -291,7 +333,7 @@ describe('Update', function (): void {
         expect($project->users()->count())->toBe(4);
     });
 
-    it('can update project attribute values', function () {
+    it('can update project attribute values', function (): void {
         $project = Project::factory()->create();
         $project->users()->attach($this->user->id);
 

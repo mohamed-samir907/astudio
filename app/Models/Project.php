@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Project extends Model
 {
@@ -34,5 +37,25 @@ class Project extends Model
     public function attributeValues(): HasMany
     {
         return $this->hasMany(AttributeValue::class, 'entity_id');
+    }
+
+    /**
+     * @param  Builder<Project> $query
+     * @param  Collection<string, mixed> $filters
+     * @return Builder<Project>
+     */
+    public function scopeFilter(Builder $query, Collection $filters): Builder
+    {
+        return $query->where(
+            fn($builder) => app(Pipeline::class)
+                ->send($builder)
+                ->through([
+                    new \App\Filters\Project\NameFilter($filters),
+                    new \App\Filters\Project\StatusFilter($filters),
+                    new \App\Filters\Project\AttributesFilter($filters),
+                ])
+                ->via('apply')
+                ->thenReturn(),
+        );
     }
 }

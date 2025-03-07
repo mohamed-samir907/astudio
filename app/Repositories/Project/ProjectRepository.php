@@ -5,11 +5,15 @@ namespace App\Repositories\Project;
 use App\Models\User;
 use App\Models\Project;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Support\Collection;
 
 interface ProjectRepository
 {
-    /** @return Paginator<Project> */
-    public function getPaginatedForUser(User $user, int $limit = 10): Paginator;
+    /**
+     * @param Collection<string, mixed> $filters
+     * @return Paginator<Project>
+     */
+    public function getPaginatedForUser(User $user, Collection $filters, int $limit = 10): Paginator;
 
     /** @param array<string, mixed> $data */
     public function create(array $data): Project;

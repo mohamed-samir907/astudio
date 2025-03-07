@@ -5,12 +5,16 @@ namespace App\Repositories\Project;
 use App\Models\User;
 use App\Models\Project;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Support\Collection;
 
 final class EloquentProjectRepository implements ProjectRepository
 {
-    public function getPaginatedForUser(User $user, int $limit = 10): Paginator
+    public function getPaginatedForUser(User $user, Collection $filters, int $limit = 10): Paginator
     {
-        return $user->projects()->with('attributeValues.attribute')->simplePaginate($limit);
+        return $user->projects()
+            ->with('attributeValues.attribute')
+            ->filter($filters)
+            ->simplePaginate($limit);
     }
 
     public function create(array $data): Project

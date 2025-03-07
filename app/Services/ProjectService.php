@@ -19,9 +19,13 @@ final class ProjectService
 
     public function getPaginated(): ProjectCollection
     {
+        /** @var array<string, mixed> */
+        $filters = request('filters', []);
+
         return new ProjectCollection(
             $this->projectRepository->getPaginatedForUser(
                 Auth::user(),
+                $filters = collect($filters),
             ),
         );
     }
