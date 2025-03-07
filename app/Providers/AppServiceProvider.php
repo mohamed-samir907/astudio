@@ -21,5 +21,15 @@ class AppServiceProvider extends ServiceProvider
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
         Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+
+        $this->bindRepositories();
+    }
+
+    private function bindRepositories(): void
+    {
+        $this->app->bind(
+            \App\Repositories\Project\ProjectRepository::class,
+            \App\Repositories\Project\EloquentProjectRepository::class,
+        );
     }
 }

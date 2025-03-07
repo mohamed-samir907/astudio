@@ -10,4 +10,6 @@ Route::middleware('auth:api')->group(function (): void {
     Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout']);
 
     Route::get('/user', fn(Request $request) => $request->user());
+
+    Route::apiResource('projects', App\Http\Controllers\ProjectController::class);
 });

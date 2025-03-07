@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Enums\ResponseCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 final class ApiResponse
 {
@@ -16,48 +17,59 @@ final class ApiResponse
     /**
      * Return a success response.
      */
-    public function success(mixed $data = null, string $message = 'Success', ResponseCode $code = ResponseCode::Ok): JsonResponse
-    {
-        return response()->json([
+    public function success(
+        mixed $data = null,
+        string $message = 'Success',
+        ResponseCode $code = ResponseCode::Ok,
+    ): JsonResponse {
+        $resp = [
             'success' => true,
             'message' => $message,
-            'data' => $data,
-        ], $code->value);
+        ];
+
+        if ($data instanceof ResourceCollection) {
+            $data = $data->response()->getData(true);
+            $resp = array_merge($resp, $data);
+        } else {
+            $resp['data'] = $data;
+        }
+
+        return response()->json($resp, $code->value);
     }
 
     /**
      * Return a created response.
      */
-    // public function created(mixed $data = null): JsonResponse
-    // {
-    //     return $this->success(
-    //         data: $data,
-    //         message: 'Created successfully',
-    //         code: ResponseCode::Created,
-    //     );
-    // }
+    public function created(mixed $data = null): JsonResponse
+    {
+        return $this->success(
+            data: $data,
+            message: 'Created successfully',
+            code: ResponseCode::Created,
+        );
+    }
 
     /**
      * Return a updated response.
      */
-    // public function updated(mixed $data = null): JsonResponse
-    // {
-    //     return $this->success(
-    //         data: $data,
-    //         message: 'Updated successfully',
-    //     );
-    // }
+    public function updated(mixed $data = null): JsonResponse
+    {
+        return $this->success(
+            data: $data,
+            message: 'Updated successfully',
+        );
+    }
 
     /**
      * Return a deleted response.
      */
-    // public function deleted(mixed $data = null): JsonResponse
-    // {
-    //     return $this->success(
-    //         data: $data,
-    //         message: 'Deleted successfully',
-    //     );
-    // }
+    public function deleted(mixed $data = null): JsonResponse
+    {
+        return $this->success(
+            data: $data,
+            message: 'Deleted successfully',
+        );
+    }
 
     /**
      * Return an error response.
@@ -86,14 +98,14 @@ final class ApiResponse
     /**
      * Return a not found response.
      */
-    // public function notFound(string $message = 'Resource not found', mixed $errors = null): JsonResponse
-    // {
-    //     return $this->error(
-    //         message: $message,
-    //         errors: $errors,
-    //         code: ResponseCode::ErrorNotFound,
-    //     );
-    // }
+    public function notFound(string $message = 'Resource not found', mixed $errors = null): JsonResponse
+    {
+        return $this->error(
+            message: $message,
+            errors: $errors,
+            code: ResponseCode::ErrorNotFound,
+        );
+    }
 
     /**
      * Return an unauthenticated response.
@@ -110,28 +122,12 @@ final class ApiResponse
     /**
      * Return a forbidden response.
      */
-    // public function forbidden(string $message = 'Forbidden', mixed $errors = null): JsonResponse
-    // {
-    //     return $this->error(
-    //         message: $message,
-    //         errors: $errors,
-    //         code: ResponseCode::ErrorForbidden,
-    //     );
-    // }
-
-    /**
-     * Return a failed update.
-     */
-    // public function failedUpdate(): JsonResponse
-    // {
-    //     return $this->error('Failed to update');
-    // }
-
-    /**
-     * Return a failed delete.
-     */
-    // public function failedDelete(): JsonResponse
-    // {
-    //     return $this->error('Failed to delete');
-    // }
+    public function forbidden(string $message = 'Forbidden', mixed $errors = null): JsonResponse
+    {
+        return $this->error(
+            message: $message,
+            errors: $errors,
+            code: ResponseCode::ErrorForbidden,
+        );
+    }
 }
