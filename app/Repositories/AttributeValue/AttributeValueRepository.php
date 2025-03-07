@@ -19,4 +19,6 @@ interface AttributeValueRepository
     public function update(AttributeValue $project, array $data): bool;
 
     public function delete(AttributeValue $project): bool;
+
+    public function deleteByEntity(int $entityId): bool;
 }

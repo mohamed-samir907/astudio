@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\Project\ProjectResource;
 use App\Repositories\Project\ProjectRepository;
 use App\Http\Resources\Project\ProjectCollection;
+use App\Repositories\AttributeValue\AttributeValueRepository;
 
 final class ProjectService
 {
     public function __construct(
         private ProjectRepository $projectRepository,
+        private AttributeValueRepository $attributeValueRepository,
     ) {}
 
     public function getPaginated(): ProjectCollection
@@ -32,6 +34,16 @@ final class ProjectService
 
         $this->projectRepository->assignUsers($project, $users);
 
+        if (! empty($dto->attributes)) {
+            foreach ($dto->attributes as $attribute) {
+                $this->attributeValueRepository->create([
+                    'attribute_id' => $attribute->attributeId,
+                    'entity_id' => $project->id,
+                    'value' => $attribute->value,
+                ]);
+            }
+        }
+
         return new ProjectResource($project);
     }
 
@@ -46,7 +58,7 @@ final class ProjectService
     {
         $project = $this->findAndCheckAccess($id);
 
-        if (empty($dto->toDatabase()) && empty($dto->users)) {
+        if (empty($dto->toDatabase()) && empty($dto->users) && empty($dto->attributes)) {
             abort(422, 'No data provided');
         }
 
@@ -58,6 +70,18 @@ final class ProjectService
             $users = array_unique(array_merge($dto->users, [Auth::id()]));
 
             $this->projectRepository->assignUsers($project, $users);
+        }
+
+        if (! empty($dto->attributes)) {
+            $this->attributeValueRepository->deleteByEntity($project->id);
+
+            foreach ($dto->attributes as $attribute) {
+                $this->attributeValueRepository->create([
+                    'attribute_id' => $attribute->attributeId,
+                    'entity_id' => $project->id,
+                    'value' => $attribute->value,
+                ]);
+            }
         }
     }
 

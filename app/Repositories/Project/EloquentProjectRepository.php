@@ -10,7 +10,7 @@ final class EloquentProjectRepository implements ProjectRepository
 {
     public function getPaginatedForUser(User $user, int $limit = 10): Paginator
     {
-        return $user->projects()->simplePaginate($limit);
+        return $user->projects()->with('attributeValues.attribute')->simplePaginate($limit);
     }
 
     public function create(array $data): Project

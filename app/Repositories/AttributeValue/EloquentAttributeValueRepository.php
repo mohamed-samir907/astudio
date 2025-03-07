@@ -31,4 +31,9 @@ final class EloquentAttributeValueRepository implements AttributeValueRepository
     {
         return $project->delete();
     }
+
+    public function deleteByEntity(int $entityId): bool
+    {
+        return AttributeValue::where('entity_id', $entityId)->delete();
+    }
 }

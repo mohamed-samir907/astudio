@@ -30,6 +30,9 @@ class ProjectRequest extends FormRequest
             'status' => [$isUpdate ? 'sometimes' : 'required', new Enum(ProjectStatus::class)],
             'users' => ['sometimes', 'array'],
             'users.*' => ['exists:users,id'],
+            'attributes' => ['sometimes', 'array'],
+            'attributes.*.attribute_id' => ['required', 'exists:attributes,id'],
+            'attributes.*.value' => ['required', 'string', 'max:255'],
         ];
     }
 }

@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\Project;
-use App\Models\Timesheet;
 use App\Models\User;
+use App\Models\Project;
+use App\Models\Attribute;
+use App\Models\Timesheet;
+use App\Models\AttributeValue;
 
 describe('User', function (): void {
     it('can be created', function (): void {
@@ -48,6 +50,14 @@ describe('Project', function (): void {
 
         expect($project->timesheets)->toHaveCount(3);
     });
+
+    it('has many attribute values', function (): void {
+        $project = Project::factory()->create();
+
+        AttributeValue::factory(3)->create(['entity_id' => $project->id]);
+
+        expect($project->attributeValues)->toHaveCount(3);
+    });
 });
 
 describe('Timesheet', function (): void {
@@ -65,5 +75,33 @@ describe('Timesheet', function (): void {
         $timesheet = Timesheet::factory()->create(['project_id' => $project->id]);
 
         expect($timesheet->project->id)->toBe($project->id);
+    });
+});
+
+describe('Attribute', function (): void {
+    it('has many attribute values', function (): void {
+        $attribute = Attribute::factory()->create();
+
+        AttributeValue::factory(3)->create(['attribute_id' => $attribute->id]);
+
+        expect($attribute->attributeValues)->toHaveCount(3);
+    });
+});
+
+describe('AttributeValue', function (): void {
+    it('is related to an attribute', function (): void {
+        $attribute = Attribute::factory()->create();
+
+        $attributeValue = AttributeValue::factory()->create(['attribute_id' => $attribute->id]);
+
+        expect($attributeValue->attribute->id)->toBe($attribute->id);
+    });
+
+    it('is related to an entity', function (): void {
+        $project = Project::factory()->create();
+
+        $attributeValue = AttributeValue::factory()->create(['entity_id' => $project->id]);
+
+        expect($attributeValue->entity->id)->toBe($project->id);
     });
 });

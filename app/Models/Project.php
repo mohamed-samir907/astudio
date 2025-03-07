@@ -33,6 +33,6 @@ class Project extends Model
     /** @return HasMany<AttributeValue, $this> */
     public function attributeValues(): HasMany
     {
-        return $this->hasMany(AttributeValue::class);
+        return $this->hasMany(AttributeValue::class, 'entity_id');
     }
 }

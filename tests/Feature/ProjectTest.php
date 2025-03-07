@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\ProjectStatus;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 use App\Models\User;
 use App\Models\Project;
 use Laravel\Passport\Passport;
@@ -30,6 +32,15 @@ describe('Index', function (): void {
                         'id',
                         'name',
                         'status',
+                        'attributes' => [
+                            '*' => [
+                                'id',
+                                'attribute_id',
+                                'name',
+                                'type',
+                                'value',
+                            ],
+                        ],
                         'created_at',
                         'updated_at',
                     ],
@@ -121,6 +132,90 @@ describe('Create', function (): void {
                 'status' => $data['status'],
             ]);
     });
+
+    it('can create a project with users', function (): void {
+        $users = User::factory(3)->create();
+        $data = [
+            'name' => 'Project 1',
+            'status' => ProjectStatus::Completed,
+            'users' => $users->pluck('id')->toArray(),
+        ];
+
+        $response = postJson('/api/projects', $data);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    'id',
+                    'name',
+                    'status',
+                    'created_at',
+                    'updated_at',
+                ],
+            ])
+            ->assertJsonFragment([
+                'name' => $data['name'],
+                'status' => $data['status'],
+            ]);
+
+        $project = Project::find($response->json('data.id'));
+
+        expect($project->users()->count())->toBe(4);
+    });
+
+    it('can create a project with attribute values', function () {
+        $attribute = Attribute::factory()->create();
+        $attributeValue = [
+            'attribute_id' => $attribute->id,
+            'value' => fake()->word(),
+        ];
+
+        $data = [
+            'name' => 'Project 1',
+            'status' => ProjectStatus::Completed,
+            'attributes' => [$attributeValue],
+        ];
+
+        $response = postJson('/api/projects', $data);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'success',
+                'message',
+                'data' => [
+                    'id',
+                    'name',
+                    'status',
+                    'attributes' => [
+                        '*' => [
+                            'id',
+                            'attribute_id',
+                            'name',
+                            'type',
+                            'value',
+                        ],
+                    ],
+                    'created_at',
+                    'updated_at',
+                    'attributes',
+                ],
+            ])
+            ->assertJsonFragment([
+                'name' => $data['name'],
+                'status' => $data['status'],
+                'attributes' => [
+                    [
+                        'id' => $response->json('data.attributes.0.id'),
+                        'attribute_id' => $attributeValue['attribute_id'],
+                        'name' => $attribute->name,
+                        'type' => $attribute->type,
+                        'value' => $attributeValue['value'],
+                    ],
+                ],
+            ]);
+    });
 });
 
 describe('Update', function (): void {
@@ -194,6 +289,41 @@ describe('Update', function (): void {
         $project->refresh();
 
         expect($project->users()->count())->toBe(4);
+    });
+
+    it('can update project attribute values', function () {
+        $project = Project::factory()->create();
+        $project->users()->attach($this->user->id);
+
+        $attribute = Attribute::factory()->create();
+        AttributeValue::factory()->withAttribute($attribute)->create([
+            'entity_id' => $project->id,
+        ]);
+
+        $data = [
+            'attributes' => [
+                [
+                    'attribute_id' => $attribute->id,
+                    'value' => 'Hello world',
+                ],
+            ],
+        ];
+
+        $response = putJson("/api/projects/{$project->id}", $data);
+
+        $response->assertStatus(200)
+            ->assertJsonFragment([
+                'success' => true,
+                'message' => 'Updated successfully',
+            ]);
+
+        assertDatabaseHas('attribute_values', [
+            'attribute_id' => $attribute->id,
+            'entity_id' => $project->id,
+            'value' => 'Hello world',
+        ]);
+
+        expect($project->fresh()->attributeValues->count())->toBe(1);
     });
 });
 
