@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return ApiResponse::make()->validationError($e);
+            }
+        });
+
+        $exceptions->render(function (UniqueConstraintViolationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return ApiResponse::make()->error('Resource already exists');
             }
         });
     })->create();
