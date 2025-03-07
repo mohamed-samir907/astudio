@@ -31,5 +31,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Project\ProjectRepository::class,
             \App\Repositories\Project\EloquentProjectRepository::class,
         );
+
+        $this->app->bind(
+            \App\Repositories\Timesheet\TimesheetRepository::class,
+            \App\Repositories\Timesheet\EloquentTimesheetRepository::class,
+        );
     }
 }

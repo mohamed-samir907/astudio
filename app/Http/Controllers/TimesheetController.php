@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\DTOs\ProjectDTO;
+use App\DTOs\TimesheetDTO;
+use Throwable;
 use App\Enums\ResponseCode;
-use App\Http\Requests\ProjectRequest;
-use App\Services\ProjectService;
+use App\Http\Requests\TimesheetRequest;
 use App\Support\ApiResponse;
+use App\Services\TimesheetService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Throwable;
 
-class ProjectController
+class TimesheetController
 {
     public function __construct(
-        private ProjectService $service,
+        private TimesheetService $service,
         private ApiResponse $apiResponse,
     ) {}
 
@@ -32,11 +32,11 @@ class ProjectController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ProjectRequest $request): JsonResponse
+    public function store(TimesheetRequest $request): JsonResponse
     {
         return $this->apiResponse->created(
             $this->service->create(
-                ProjectDTO::fromRequest($request),
+                TimesheetDTO::fromRequest($request),
             ),
         );
     }
@@ -70,11 +70,11 @@ class ProjectController
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProjectRequest $request, int $id): JsonResponse
+    public function update(TimesheetRequest $request, int $id): JsonResponse
     {
         try {
             $this->service->update(
-                ProjectDTO::fromRequest($request),
+                TimesheetDTO::fromRequest($request),
                 $id,
             );
 
@@ -96,6 +96,9 @@ class ProjectController
         }
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(int $id): JsonResponse
     {
         try {

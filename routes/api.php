@@ -12,4 +12,5 @@ Route::middleware('auth:api')->group(function (): void {
     Route::get('/user', fn(Request $request) => $request->user());
 
     Route::apiResource('projects', App\Http\Controllers\ProjectController::class);
+    Route::apiResource('timesheets', App\Http\Controllers\TimesheetController::class);
 });
